@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
     <IntermediateOutputPath>C:\Users\rick-\AppData\Local\Temp\vsF4BE.tmp\Release\</IntermediateOutputPath>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="AstroMath">
       <HintPath>..\..\AstroMath\AstroMath\bin\Release\AstroMath.dll</HintPath>
