@@ -1,6 +1,7 @@
 ﻿using AstroImage;
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using AstroMath;
 
@@ -56,15 +57,75 @@ namespace AstroImage_Test
 
             Size subSize = new Size(ap.PixImage.Width / 4, ap.PixImage.Height / 4);
 
-            Image subImage = af.FitsSubframe(ap.PixImage, target, subSize);
-            Size sizeUp = new Size(ap.PixImage.Size.Width / 2, ap.PixImage.Size.Height / 2);
-            Image baseImage = AstroPic.Zoom(ap.PixImage, sizeUp);
-            //Image baseImage = ap.PixImage;
+            //Image subImage = af.FitsSubframe(ap.PixImage, target, subSize);
+            //Size sizeUp = new Size(ap.PixImage.Size.Width / 2, ap.PixImage.Size.Height / 2);
+            //Image baseImage = AstroPic.Zoom(ap.PixImage, sizeUp);
+            Image baseImage = ap.PixImage;
 
-            fitsPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-            fitsPictureBox.Image = baseImage;
+            FitsPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            FitsPictureBox.Image = baseImage;
 
             LoadFItsButton.BackColor = Color.Green;
+            return;
+        }
+
+        private void StackButton_Click(object sender, EventArgs e)
+        {
+            FitsPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            const double defaultRAHours = 0;
+            const double defaultDecDegrees = 0;
+            StackButton.BackColor = Color.Salmon;
+            openFileDialog1.Filter = "FITS files (*.fit)|*.fit";
+            openFileDialog1.ShowDialog();
+            string[] fileNames = openFileDialog1.FileNames;
+            if (fileNames.Length < 1) return;
+            fitsFileTextBox.Text = fileNames[0];
+            FitsFile[] fsSet = new FitsFile[fileNames.Length];
+            for (int fs = 0; fs < fileNames.Length; fs++)
+                fsSet[fs] = new AstroImage.FitsFile(fileNames[fs], true);
+            //
+            //Stack fsSet
+            int pCount;
+            if (SequentialBox.Checked)
+                pCount = 0;
+            else
+                pCount = fsSet.Length - 1;
+
+            for (int i = pCount; i < fsSet.Length; i++)
+            {
+
+                FitsFile af = Stack.StraightStack(fsSet, i);
+
+                double pixSize = 1;
+                if (af.FocalLength != 0) pixSize = (206.265 / af.FocalLength) * af.XpixSz;
+                if (af.RA == 0) af.RA = defaultRAHours;
+                if (af.Dec == 0) af.Dec = defaultDecDegrees;
+
+
+                ap = new AstroPic(af);
+
+                //target cross hairs
+                //Point target;
+                //target = af.RADECtoImageXY(af.RA, af.Dec);
+                //target.X -= 40;
+                //target.Y += 2;
+
+                //ap.AddCrossHair(target, 80, 2);
+
+                //Size subSize = new Size(ap.PixImage.Width / 1, ap.PixImage.Height / 1);
+
+                //Image subImage = af.FitsSubframe(ap.PixImage, target, subSize);
+                //Size sizeUp = new Size(ap.PixImage.Size.Width / 2, ap.PixImage.Size.Height / 2);
+                //Image baseImage = AstroPic.Zoom(ap.PixImage, sizeUp);
+                Image baseImage = ap.ResizeImage(FitsPictureBox.Size, true);
+
+                FitsPictureBox.Image = baseImage;
+                //System.Threading.Thread.Sleep(1000);
+                Show();
+                Application.DoEvents();
+            }
+            StackButton.BackColor = Color.Green;
+
             return;
         }
 
@@ -91,8 +152,8 @@ namespace AstroImage_Test
             Size sizeUp = new Size(ap.PixImage.Size.Width / 2, ap.PixImage.Size.Height / 2);
             Image baseImage = AstroPic.Zoom(ap.PixImage, sizeUp);
 
-            fitsPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-            fitsPictureBox.Image = baseImage;
+            FitsPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            FitsPictureBox.Image = baseImage;
 
             //fitsPictureBox.Image = (Image)AstroPic.AddCrossHair((Bitmap)fitsPictureBox.Image, cPos, 20, 2);
             //
@@ -103,6 +164,7 @@ namespace AstroImage_Test
             //astd.Show();
             Application.DoEvents();
         }
+
 
 
     }

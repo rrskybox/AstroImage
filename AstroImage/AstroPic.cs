@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using AstroMath;
 
 namespace AstroImage
 {
@@ -18,8 +20,10 @@ namespace AstroImage
             fitsIn = af;
             if ((fitsIn.PixelScale == 0) && (fitsIn.FocalLength != 0))
                 fitsIn.PixelScale = (206.265 / fitsIn.FocalLength) * fitsIn.XpixSz;
-            if (af.MakePlate()) PixImage = fitsIn.HistogramLogStretch();
-            else PixImage = null;
+            if (af.PlateSolve())
+                PixImage = fitsIn.LinearStretch();
+            //else PixImage = null;
+            else PixImage = fitsIn.LinearStretch();
             return;
         }
 
@@ -29,6 +33,8 @@ namespace AstroImage
             //  of size 1/10 of the height, with an internal opening of 
             //  1/10 the line length
             Bitmap bm = (Bitmap)PixImage;
+            //If null image for some reason, then just return
+            if (bm == null) return null;
             int holeLen = (int)(symSize * .2);
             int x = position.X;
             int y = position.Y;
@@ -78,7 +84,7 @@ namespace AstroImage
             //  between the two images. 
             Bitmap scurImage = new Bitmap(size.Width, size.Height);
             Color bigImagePixel;
-            double rot = MathHelpers.DegToRad(rotation);
+            double rot = Transform.DegreesToRadians(rotation);
             for (int iXp = 0; iXp < size.Width; iXp++)
             {
                 for (int iYp = 0; iYp < size.Height; iYp++)
@@ -101,11 +107,12 @@ namespace AstroImage
             return scurImage;
         }
 
+
         private int TransformX(double X, double Y, double angleR)
         {
             //Computes X coordinate of a rotation on X,Y through a rotation of angle degrees
             //X in pixels, Y in pixels, angle in radians
-            //x' = x cos deltaPA - y sin deltaPA
+            //x// = x cos deltaPA - y sin deltaPA
             // double angleR = Math.PI * angleD / 180.0;
             // angleR = Math.PI * -90.001 / 180.0;
             double dX = (X * Math.Cos(angleR)) - (Y * Math.Sin(angleR));
@@ -116,7 +123,7 @@ namespace AstroImage
         {
             //Computes Y coordinate of a rotation on X,Y through a rotation of angle degrees
             //X in pixels, Y in pixels, angle in radians
-            //y' = y cos deltaPA + x sin deltaPA
+            //y// = y cos deltaPA + x sin deltaPA
             //double angleR = Math.PI * angleD / 180.0;
             //angleR = Math.PI * -90.001 / 180.0;
             double dY = (Y * Math.Cos(angleR)) + (X * Math.Sin(angleR));
@@ -128,6 +135,37 @@ namespace AstroImage
             if (((valX >= minX) && (valX <= maxX)) && ((valY >= minY) && (valY <= maxY)))
                 return true;
             else return false;
+        }
+
+        public Image ResizeImage( Size size, bool preserveAspectRatio = true)
+        {
+            int newWidth;
+            int newHeight;
+            if (preserveAspectRatio)
+            {
+                int originalWidth = PixImage.Width;
+                int originalHeight = PixImage.Height;
+                float percentWidth = (float)size.Width / (float)originalWidth;
+                float percentHeight = (float)size.Height / (float)originalHeight;
+                float percent = percentHeight < percentWidth ? percentHeight : percentWidth;
+                newWidth = (int)(originalWidth * percent);
+                newHeight = (int)(originalHeight * percent);
+            }
+            else
+            {
+                newWidth = size.Width;
+                newHeight = size.Height;
+            }
+
+            Image newImage = new Bitmap(newWidth, newHeight);
+            // C#
+            using (Graphics graphicsHandle = Graphics.FromImage(newImage))
+            {
+                graphicsHandle.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphicsHandle.DrawImage(PixImage, 0, 0, newWidth, newHeight);
+            }
+            return newImage;
+
         }
     }
 }

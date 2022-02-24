@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using MathNet;
 
 namespace AstroImage
 {
@@ -13,7 +14,7 @@ namespace AstroImage
         byte[] dataUnit = new byte[2880];
         int bCount;
 
-        private UInt16[,] FITSArray;
+        public UInt16[,] FITSArray;
 
         private List<string> fitsHdr = new List<string>();
         private UInt16[] fitsData = new UInt16[1];
@@ -34,6 +35,24 @@ namespace AstroImage
         public int MaxValue { get; set; }  //ADU
         public int MinValue { get; set; }  //ADU
         public int AvgValue { get; set; }  //ADU
+
+        public FitsFile() { } //null instance
+
+        public FitsFile(FitsFile fs)  //make a copy
+        {
+            FITSArray = fs.FITSArray;
+            Xaxis = fs.Xaxis;
+            Yaxis = fs.Yaxis;
+            RA = fs.RA;
+            Dec = fs.Dec;
+            PA = fs.PA;
+            XpixSz = fs.XpixSz;
+            YpixSz = fs.YpixSz;
+            FocalLength = fs.FocalLength;
+            PixelScale = fs.PixelScale;
+            MaxValue = fs.MaxValue;
+            AvgValue = fs.AvgValue;
+        }
 
         public FitsFile(string filepath, bool dataswitch)
         {
@@ -138,11 +157,11 @@ namespace AstroImage
             }
             //Generate Fits image array
             FITSArray = new UInt16[Xaxis, Yaxis];
-            for (int iy = 0; iy < Yaxis; iy++)
+            for (int iy = 1; iy <= Yaxis; iy++)
             {
-                for (int ix = 0; ix < Xaxis; ix++)
+                for (int ix = 1; ix <= Xaxis; ix++)
                 {
-                    FITSArray[ix, iy] = fitsData[ix + (iy * Xaxis)];
+                    FITSArray[ix-1, Yaxis-iy] = fitsData[(ix-1) + ((iy-1) * Xaxis)];
                 }
             }
             //Close file
@@ -176,7 +195,49 @@ namespace AstroImage
             return (null);
         }
 
-        public Bitmap HistogramStretch(int maxVal, int minVal)
+        private (int, int) MedianHistogram(int buckets)
+        {
+            //Converts fitsArray to vector for histogram purposes
+            List<double> fsVector = new List<double>();
+            for (int i = 0; i < Xaxis; i++)
+                for (int j = 0; j < Yaxis; j++)
+                    fsVector.Add(FITSArray[i, j]);
+            MathNet.Numerics.Statistics.Histogram fsHistBuckets = new MathNet.Numerics.Statistics.Histogram(fsVector, buckets);
+            //Create an list that can be statistically analyzed
+            List<double> fsHistList = new List<double>();
+            for (int i = 0; i < fsHistBuckets.BucketCount; i++)
+                fsHistList.Add(fsHistBuckets[i].Count);
+            //Determine the gaussian distribution of the histogram
+            //double medianBucketValue = MathNet.Numerics.Statistics.Statistics.Mean(fsHistList);
+            double maxBucketValue = fsHistList.Max();
+            //int medianBucketIndex = FindNearestBucketSize(fsHistBuckets,medianBucketValue);
+            int maxBucketIndex = FindNearestBucketSize(fsHistBuckets, 0, fsHistBuckets.BucketCount, maxBucketValue);
+            //double stdDev = MathNet.Numerics.Statistics.Statistics.StandardDeviation(fsHistList);
+            int lowerBucketIndex = FindNearestBucketSize(fsHistBuckets, 0, maxBucketIndex, maxBucketValue / 4);
+            int upperBucketIndex = FindNearestBucketSize(fsHistBuckets, maxBucketIndex, fsHistBuckets.BucketCount, maxBucketValue / 4);
+
+            int upperBucketValue = (int)fsHistBuckets[upperBucketIndex].UpperBound;
+            int lowerBucketValue = (int)fsHistBuckets[lowerBucketIndex].LowerBound;
+            return (lowerBucketValue, upperBucketValue);
+        }
+
+        private int FindNearestBucketSize(MathNet.Numerics.Statistics.Histogram hg, int startLookingIndex, int stopLookingIndex, double level)
+        {
+            //find the bucket whose contents is closest to the value level
+            int min = int.MaxValue;
+            int thisone = 0;
+            for (int i = startLookingIndex; i < stopLookingIndex; i++)
+            {
+                if (Math.Abs(hg[i].Count - level) < min)
+                {
+                    min = (int)Math.Abs(hg[i].Count - level);
+                    thisone = i;
+                }
+            }
+            return thisone;
+        }
+
+        public Bitmap LinearStretch()
         {
             //Stretches image values based on Max, Min of byte image
             //  This alogrithm subtracts the Min from each element, { multiplies by the
@@ -185,36 +246,39 @@ namespace AstroImage
             Bitmap fitsBMP = new Bitmap(Xaxis, Yaxis);
             int pixVal;
             Color newColor;
-            //int minVal = MinValue;
-            //MaxValue = clipVal;
+            (int lowerVal, int upperVal) = MedianHistogram(100);
+
             int width = Xaxis;
             int height = Yaxis;
-            int range = maxVal - minVal + 1;
+            int range = upperVal - lowerVal + 1;
 
             int rangeStretch = 255 / range;
             for (int iy = 0; iy < height; iy++)
             {
                 for (int ix = 0; ix < width; ix++)
                 {
-                    pixVal = Math.Min((fitsData[ix + (iy * width)] - minVal) * rangeStretch, 255);
-                    newColor = Color.FromArgb(255, pixVal, pixVal, pixVal);
+                    pixVal = Math.Min((FITSArray[ix , iy] - lowerVal) * rangeStretch, 255);
+                    if (pixVal < 0) 
+                        pixVal = 0;
+                      newColor = Color.FromArgb(255, pixVal, pixVal, pixVal);
                     fitsBMP.SetPixel(ix, iy, newColor);
                 }
             }
             return fitsBMP;
         }
 
-        public Bitmap HistogramLogStretch()
+        public Bitmap LogStretch()
         {
-            //Stretches image values based on Max, Min of byte image using a Log stretch
+            //Stretches fits image values based on Max, Min of byte image using a Log stretch
             //  This alogrithm subtracts the Min from each element, { multiplies by the
             //     total range divided by the max-min range -- making sure there is not
             //     a divide by zero situation by adding 1 to values
             Bitmap fitsBMP = new Bitmap(Xaxis, Yaxis);
             int pixVal;
             Color newColor;
-            double logMax = Math.Log(Math.Max(MaxValue*.9, 1));
-            double logMin = Math.Log(Math.Max(MinValue, 1));
+            (double logMax, double logMin) = MedianHistogram(100);
+            //double logMax = Math.Log(Math.Max(MaxValue * .9, 1));
+            //double logMin = Math.Log(Math.Max(MinValue, 1));
             double logAvg = Math.Log(Math.Max((AvgValue - 1), 1));
 
             for (int iy = 0; iy < Yaxis; iy++)
@@ -520,30 +584,30 @@ namespace AstroImage
             return subframe;
         }
 
-        public Boolean MakePlate()
+        public Boolean PlateSolve()
         {
-            Coordinate coords = PlateSolver.StartPlateSolve(FilePath,
-                                                              RA,
-                                                              Dec,
-                                                              Xaxis * PixelScale,
-                                                              Yaxis * PixelScale,
-                                                              300,
-                                                              @"C:\Program Files (x86)\PlaneWave Instruments\PlateSolve2.28\PlateSolve2.exe");
-            if (coords == null)
+            if (FilePath != null)
             {
-                return false;
+                Coordinate coords = PlateSolver.StartPlateSolve(FilePath,
+                                                                  RA,
+                                                                  Dec,
+                                                                  Xaxis * PixelScale,
+                                                                  Yaxis * PixelScale,
+                                                                  300,
+                                                                  @"C:\Program Files (x86)\PlaneWave Instruments\PlateSolve2.28\PlateSolve2.exe");
+                if (coords == null)
+                    return false;
+                else
+                {
+                    RA = coords.Ra;
+                    Dec = coords.Dec;
+                    PA = -coords.PA;
+                    PixelScale = coords.PixelScale;
+                    return true;
+                }
             }
-            else
-            {
-                RA = coords.Ra;
-                Dec = coords.Dec;
-                PA = -coords.PA;
-                PixelScale = coords.PixelScale;
-                return true;
-            }
+            else return false;
         }
-
-
     }
 }
 

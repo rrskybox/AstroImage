@@ -7,6 +7,7 @@ namespace AstroImage
         public static Image FitsToTargetImage(FitsFile af, double targetRA, double targetDec, int zoom)
         {
             AstroPic ap = new AstroPic(af);
+            if (ap.PixImage == null) return null;
             if ((targetRA == 0) && (targetDec == 0))
             {
                 targetRA = af.RA;

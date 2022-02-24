@@ -22,7 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <IntermediateOutputPath>C:\Users\rick-\AppData\Local\Temp\vsF4BE.tmp\Debug\</IntermediateOutputPath>
+    <IntermediateOutputPath>C:\Users\rick-\AppData\Local\Temp\vs2852.tmp\Debug\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,7 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <IntermediateOutputPath>C:\Users\rick-\AppData\Local\Temp\vsF4BE.tmp\Release\</IntermediateOutputPath>
+    <IntermediateOutputPath>C:\Users\rick-\AppData\Local\Temp\vs2852.tmp\Release\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
@@ -40,12 +40,20 @@
     <Reference Include="AstroMath">
       <HintPath>..\..\AstroMath\AstroMath\bin\Release\AstroMath.dll</HintPath>
     </Reference>
-    <Reference Include="Blinker">
-      <HintPath>..\..\Blinker\Blinker\bin\Debug\Blinker.exe</HintPath>
+    <Reference Include="MathNet.Filtering, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathNet.Filtering.0.7.0\lib\net461\MathNet.Filtering.dll</HintPath>
+    </Reference>
+    <Reference Include="MathNet.Numerics, Version=4.15.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathNet.Numerics.4.15.0\lib\net461\MathNet.Numerics.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
@@ -57,23 +65,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AstroDisplay.cs" />
-    <Compile Include="FormAstroDisplay.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormAstroDisplay.Designer.cs">
-      <DependentUpon>FormAstroDisplay.cs</DependentUpon>
-    </Compile>
+    <Compile Include="CImage.cs" />
+    <Compile Include="Filter.cs" />
     <Compile Include="AstroPic.cs" />
     <Compile Include="FitsFile.cs" />
-    <Compile Include="MathHelpers.cs" />
     <Compile Include="MonoImage.cs" />
     <Compile Include="PlateSolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Stack.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="FormAstroDisplay.resx">
-      <DependentUpon>FormAstroDisplay.cs</DependentUpon>
-    </EmbeddedResource>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

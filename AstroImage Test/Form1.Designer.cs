@@ -30,14 +30,16 @@
         {
             this.LoadFItsButton = new System.Windows.Forms.Button();
             this.fitsFileTextBox = new System.Windows.Forms.TextBox();
-            this.fitsPictureBox = new System.Windows.Forms.PictureBox();
+            this.FitsPictureBox = new System.Windows.Forms.PictureBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.TargetButton = new System.Windows.Forms.Button();
             this.radectextbox = new System.Windows.Forms.TextBox();
             this.imageradectextbox = new System.Windows.Forms.TextBox();
             this.fitsradectextbox = new System.Windows.Forms.TextBox();
             this.TargetXYBox = new System.Windows.Forms.TextBox();
-            ((System.ComponentModel.ISupportInitialize)(this.fitsPictureBox)).BeginInit();
+            this.StackButton = new System.Windows.Forms.Button();
+            this.SequentialBox = new System.Windows.Forms.CheckBox();
+            ((System.ComponentModel.ISupportInitialize)(this.FitsPictureBox)).BeginInit();
             this.SuspendLayout();
             // 
             // LoadFItsButton
@@ -57,17 +59,19 @@
             this.fitsFileTextBox.Size = new System.Drawing.Size(569, 20);
             this.fitsFileTextBox.TabIndex = 1;
             // 
-            // fitsPictureBox
+            // FitsPictureBox
             // 
-            this.fitsPictureBox.Location = new System.Drawing.Point(25, 107);
-            this.fitsPictureBox.Name = "fitsPictureBox";
-            this.fitsPictureBox.Size = new System.Drawing.Size(736, 470);
-            this.fitsPictureBox.TabIndex = 2;
-            this.fitsPictureBox.TabStop = false;
+            this.FitsPictureBox.Location = new System.Drawing.Point(25, 103);
+            this.FitsPictureBox.Name = "FitsPictureBox";
+            this.FitsPictureBox.Size = new System.Drawing.Size(736, 470);
+            this.FitsPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.FitsPictureBox.TabIndex = 2;
+            this.FitsPictureBox.TabStop = false;
             // 
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
+            this.openFileDialog1.Multiselect = true;
             // 
             // TargetButton
             // 
@@ -107,22 +111,45 @@
             this.TargetXYBox.Size = new System.Drawing.Size(274, 20);
             this.TargetXYBox.TabIndex = 8;
             // 
+            // StackButton
+            // 
+            this.StackButton.Location = new System.Drawing.Point(718, 12);
+            this.StackButton.Name = "StackButton";
+            this.StackButton.Size = new System.Drawing.Size(75, 23);
+            this.StackButton.TabIndex = 9;
+            this.StackButton.Text = "Stack";
+            this.StackButton.UseVisualStyleBackColor = true;
+            this.StackButton.Click += new System.EventHandler(this.StackButton_Click);
+            // 
+            // SequentialBox
+            // 
+            this.SequentialBox.AutoSize = true;
+            this.SequentialBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.SequentialBox.Location = new System.Drawing.Point(717, 41);
+            this.SequentialBox.Name = "SequentialBox";
+            this.SequentialBox.Size = new System.Drawing.Size(76, 17);
+            this.SequentialBox.TabIndex = 10;
+            this.SequentialBox.Text = "Sequential";
+            this.SequentialBox.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 691);
+            this.ClientSize = new System.Drawing.Size(794, 584);
+            this.Controls.Add(this.SequentialBox);
+            this.Controls.Add(this.StackButton);
             this.Controls.Add(this.TargetXYBox);
             this.Controls.Add(this.fitsradectextbox);
             this.Controls.Add(this.imageradectextbox);
             this.Controls.Add(this.radectextbox);
             this.Controls.Add(this.TargetButton);
-            this.Controls.Add(this.fitsPictureBox);
+            this.Controls.Add(this.FitsPictureBox);
             this.Controls.Add(this.fitsFileTextBox);
             this.Controls.Add(this.LoadFItsButton);
             this.Name = "Form1";
             this.Text = "Form1";
-            ((System.ComponentModel.ISupportInitialize)(this.fitsPictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.FitsPictureBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -131,13 +158,15 @@
         #endregion
         private System.Windows.Forms.Button LoadFItsButton;
         private System.Windows.Forms.TextBox fitsFileTextBox;
-        private System.Windows.Forms.PictureBox fitsPictureBox;
+        private System.Windows.Forms.PictureBox FitsPictureBox;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.Button TargetButton;
         private System.Windows.Forms.TextBox radectextbox;
         private System.Windows.Forms.TextBox imageradectextbox;
         private System.Windows.Forms.TextBox fitsradectextbox;
         private System.Windows.Forms.TextBox TargetXYBox;
+        private System.Windows.Forms.Button StackButton;
+        private System.Windows.Forms.CheckBox SequentialBox;
     }
 }
 

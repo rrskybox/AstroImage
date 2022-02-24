@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace AstroImage
 {
+
     public class MonoImage
     {
         //Produces a grayscale bitmap from a FITS integer array scaled to values from 0 - 255
@@ -51,6 +52,6 @@ namespace AstroImage
             return (ushort)(Math.Min(intData, maxVal));
         }
 
-
     }
 }
+

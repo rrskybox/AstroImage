@@ -36,21 +36,22 @@
             // 
             this.fitsPictureBox.Location = new System.Drawing.Point(12, 12);
             this.fitsPictureBox.Name = "fitsPictureBox";
-            this.fitsPictureBox.Size = new System.Drawing.Size(736, 470);
-            this.fitsPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.fitsPictureBox.Size = new System.Drawing.Size(1044, 756);
+            this.fitsPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.fitsPictureBox.TabIndex = 3;
             this.fitsPictureBox.TabStop = false;
             // 
-            // AstroDisplay
+            // FormAstroDisplay
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(759, 499);
+            this.ClientSize = new System.Drawing.Size(1068, 780);
             this.Controls.Add(this.fitsPictureBox);
-            this.Name = "AstroDisplay";
+            this.Name = "FormAstroDisplay";
             this.Text = "FITS Image";
             ((System.ComponentModel.ISupportInitialize)(this.fitsPictureBox)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 

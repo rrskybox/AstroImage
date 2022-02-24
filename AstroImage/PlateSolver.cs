@@ -45,10 +45,10 @@ namespace AstroImage
 
             proc.StartInfo.FileName = solverPath;
             proc.StartInfo.Arguments =
-                MathHelpers.HoursToRad(raHrs).ToString("0.00000", CultureInfo.InvariantCulture) + "," +
-                MathHelpers.DegToRad(decDegrees).ToString("0.00000", CultureInfo.InvariantCulture) + "," +
-                MathHelpers.DegToRad(fieldWidthArcSec / 3600.0).ToString("0.000", CultureInfo.InvariantCulture) + "," +
-                MathHelpers.DegToRad(fieldHeightArcSec / 3600.0).ToString("0.000", CultureInfo.InvariantCulture) + "," +
+                Transform.HoursToRadians(raHrs).ToString("0.00000", CultureInfo.InvariantCulture) + "," +
+                Transform.DegreesToRadians(decDegrees).ToString("0.00000", CultureInfo.InvariantCulture) + "," +
+                Transform.DegreesToRadians(fieldWidthArcSec / 3600.0).ToString("0.000", CultureInfo.InvariantCulture) + "," +
+                Transform.DegreesToRadians(fieldHeightArcSec / 3600.0).ToString("0.000", CultureInfo.InvariantCulture) + "," +
                 maxTiles.ToString() + "," +
                 fileName + "," +
                 "0";
@@ -85,8 +85,8 @@ namespace AstroImage
                     string[] secondLine = HandleSeparators(lines[1]).Split(',');
                     result = new Coordinate
                     {
-                        Ra = MathHelpers.RadToHours(double.Parse(firstLine[0], CultureInfo.InvariantCulture)),
-                        Dec = MathHelpers.RadToDeg(double.Parse(firstLine[1], CultureInfo.InvariantCulture)),
+                        Ra = Transform.RadiansToHours(double.Parse(firstLine[0], CultureInfo.InvariantCulture)),
+                        Dec = Transform.RadiansToDegrees(double.Parse(firstLine[1], CultureInfo.InvariantCulture)),
                         PixelScale = double.Parse(secondLine[0], CultureInfo.InvariantCulture),
                         PA = double.Parse(secondLine[1], CultureInfo.InvariantCulture),
                     };
