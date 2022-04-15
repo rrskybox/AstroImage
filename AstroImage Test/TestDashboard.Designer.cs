@@ -1,6 +1,6 @@
 ﻿namespace AstroImage_Test
 {
-    partial class Form1
+    partial class TestDashboard
     {
         /// <summary>
         /// Required designer variable.
@@ -28,6 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.LoadFItsButton = new System.Windows.Forms.Button();
             this.fitsFileTextBox = new System.Windows.Forms.TextBox();
             this.FitsPictureBox = new System.Windows.Forms.PictureBox();
@@ -38,8 +41,10 @@
             this.fitsradectextbox = new System.Windows.Forms.TextBox();
             this.TargetXYBox = new System.Windows.Forms.TextBox();
             this.StackButton = new System.Windows.Forms.Button();
-            this.SequentialBox = new System.Windows.Forms.CheckBox();
+            this.LogStackButton = new System.Windows.Forms.Button();
+            this.HistoChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             ((System.ComponentModel.ISupportInitialize)(this.FitsPictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.HistoChart)).BeginInit();
             this.SuspendLayout();
             // 
             // LoadFItsButton
@@ -67,6 +72,7 @@
             this.FitsPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.FitsPictureBox.TabIndex = 2;
             this.FitsPictureBox.TabStop = false;
+            this.FitsPictureBox.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.MouseWheel_Handler);
             // 
             // openFileDialog1
             // 
@@ -121,23 +127,40 @@
             this.StackButton.UseVisualStyleBackColor = true;
             this.StackButton.Click += new System.EventHandler(this.StackButton_Click);
             // 
-            // SequentialBox
+            // LogStackButton
             // 
-            this.SequentialBox.AutoSize = true;
-            this.SequentialBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.SequentialBox.Location = new System.Drawing.Point(717, 41);
-            this.SequentialBox.Name = "SequentialBox";
-            this.SequentialBox.Size = new System.Drawing.Size(76, 17);
-            this.SequentialBox.TabIndex = 10;
-            this.SequentialBox.Text = "Sequential";
-            this.SequentialBox.UseVisualStyleBackColor = true;
+            this.LogStackButton.Location = new System.Drawing.Point(718, 38);
+            this.LogStackButton.Name = "LogStackButton";
+            this.LogStackButton.Size = new System.Drawing.Size(75, 23);
+            this.LogStackButton.TabIndex = 10;
+            this.LogStackButton.Text = "LogStack";
+            this.LogStackButton.UseVisualStyleBackColor = true;
+            this.LogStackButton.Click += new System.EventHandler(this.LogStackButton_Click);
             // 
-            // Form1
+            // HistoChart
+            // 
+            chartArea1.AxisX.Minimum = 0D;
+            chartArea1.Name = "ChartArea1";
+            this.HistoChart.ChartAreas.Add(chartArea1);
+            legend1.Name = "Legend1";
+            this.HistoChart.Legends.Add(legend1);
+            this.HistoChart.Location = new System.Drawing.Point(28, 593);
+            this.HistoChart.Name = "HistoChart";
+            series1.ChartArea = "ChartArea1";
+            series1.Legend = "Legend1";
+            series1.Name = "Series1";
+            this.HistoChart.Series.Add(series1);
+            this.HistoChart.Size = new System.Drawing.Size(732, 281);
+            this.HistoChart.TabIndex = 11;
+            this.HistoChart.Text = "HistoChart";
+            // 
+            // TestDashboard
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(794, 584);
-            this.Controls.Add(this.SequentialBox);
+            this.ClientSize = new System.Drawing.Size(794, 902);
+            this.Controls.Add(this.HistoChart);
+            this.Controls.Add(this.LogStackButton);
             this.Controls.Add(this.StackButton);
             this.Controls.Add(this.TargetXYBox);
             this.Controls.Add(this.fitsradectextbox);
@@ -147,9 +170,10 @@
             this.Controls.Add(this.FitsPictureBox);
             this.Controls.Add(this.fitsFileTextBox);
             this.Controls.Add(this.LoadFItsButton);
-            this.Name = "Form1";
+            this.Name = "TestDashboard";
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.FitsPictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.HistoChart)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -166,7 +190,8 @@
         private System.Windows.Forms.TextBox fitsradectextbox;
         private System.Windows.Forms.TextBox TargetXYBox;
         private System.Windows.Forms.Button StackButton;
-        private System.Windows.Forms.CheckBox SequentialBox;
+        private System.Windows.Forms.Button LogStackButton;
+        private System.Windows.Forms.DataVisualization.Charting.Chart HistoChart;
     }
 }
 

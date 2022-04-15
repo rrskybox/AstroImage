@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AstroMath;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using AstroMath;
 
 namespace AstroImage
 {
@@ -20,10 +16,20 @@ namespace AstroImage
             fitsIn = af;
             if ((fitsIn.PixelScale == 0) && (fitsIn.FocalLength != 0))
                 fitsIn.PixelScale = (206.265 / fitsIn.FocalLength) * fitsIn.XpixSz;
-            if (af.PlateSolve())
-                PixImage = fitsIn.LinearStretch();
-            //else PixImage = null;
-            else PixImage = fitsIn.LinearStretch();
+            return;
+        }
+
+        public void LinearStretch()
+        {
+            Histogram hi = new Histogram(fitsIn);
+            PixImage = hi.LinearStretch();
+            return;
+        }
+
+        public void LogStretch()
+        {
+            Histogram hi = new Histogram(fitsIn);
+            PixImage = hi.LogStretch();
             return;
         }
 
@@ -137,7 +143,7 @@ namespace AstroImage
             else return false;
         }
 
-        public Image ResizeImage( Size size, bool preserveAspectRatio = true)
+        public Image ResizeImage(Size size, bool preserveAspectRatio = true)
         {
             int newWidth;
             int newHeight;

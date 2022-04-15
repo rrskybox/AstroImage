@@ -22,7 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <IntermediateOutputPath>C:\Users\rick-\AppData\Local\Temp\vs2852.tmp\Debug\</IntermediateOutputPath>
+    <IntermediateOutputPath>C:\Users\rick-\AppData\Local\Temp\vsFE11.tmp\Debug\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,7 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <IntermediateOutputPath>C:\Users\rick-\AppData\Local\Temp\vs2852.tmp\Release\</IntermediateOutputPath>
+    <IntermediateOutputPath>C:\Users\rick-\AppData\Local\Temp\vsFE11.tmp\Release\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
@@ -66,9 +66,10 @@
   <ItemGroup>
     <Compile Include="AstroDisplay.cs" />
     <Compile Include="CImage.cs" />
-    <Compile Include="Filter.cs" />
+    <Compile Include="ImageFilter.cs" />
     <Compile Include="AstroPic.cs" />
     <Compile Include="FitsFile.cs" />
+    <Compile Include="Histogram.cs" />
     <Compile Include="MonoImage.cs" />
     <Compile Include="PlateSolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

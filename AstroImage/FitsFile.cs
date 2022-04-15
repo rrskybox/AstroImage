@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using MathNet;
 
 namespace AstroImage
 {
@@ -14,11 +13,15 @@ namespace AstroImage
         byte[] dataUnit = new byte[2880];
         int bCount;
 
-        public UInt16[,] FITSArray;
+        const int HistBuckets = ushort.MaxValue;
+
+
+        public int[] FITS_Vector = new int[1];
+        public UInt16[,] FITS_Array;
 
         private List<string> fitsHdr = new List<string>();
-        private UInt16[] fitsData = new UInt16[1];
-        private UInt16[] fitsHist = new UInt16[256];
+        public int[] FITS_Hist = new int[HistBuckets];
+        public double FITS_Hist_BucketWidth { get; set; }
 
         const int ImageHeaderLength = 56 + (256 * 4);
 
@@ -35,12 +38,15 @@ namespace AstroImage
         public int MaxValue { get; set; }  //ADU
         public int MinValue { get; set; }  //ADU
         public int AvgValue { get; set; }  //ADU
+        public int HistUpperBound { get; set; }
+        public int HistLowerBound { get; set; }
 
         public FitsFile() { } //null instance
 
         public FitsFile(FitsFile fs)  //make a copy
         {
-            FITSArray = fs.FITSArray;
+            FITS_Array = new UInt16[fs.Xaxis, fs.Yaxis];
+            FITS_Vector = new int[fs.Xaxis * fs.Yaxis];
             Xaxis = fs.Xaxis;
             Yaxis = fs.Yaxis;
             RA = fs.RA;
@@ -52,6 +58,20 @@ namespace AstroImage
             PixelScale = fs.PixelScale;
             MaxValue = fs.MaxValue;
             AvgValue = fs.AvgValue;
+            FITS_Hist_BucketWidth = fs.FITS_Hist_BucketWidth;
+            for (int i = 0; i < FITS_Vector.Length; i++)
+            {
+                FITS_Vector[i] = fs.FITS_Vector[i];
+                FITS_Hist[(int)(FITS_Vector[i] / FITS_Hist_BucketWidth)] += 1;
+            }
+            for (int iy = 0; iy < Yaxis; iy++)
+            {
+                for (int ix = 0; ix < Xaxis; ix++)
+                {
+                    FITS_Array[ix, iy] = (ushort)FITS_Vector[(ix) + (iy * Xaxis)];
+                }
+            }
+
         }
 
         public FitsFile(string filepath, bool dataswitch)
@@ -110,21 +130,16 @@ namespace AstroImage
             if (dataswitch)
             {
                 int dataindex = 0;
-                int integer16;
-                int uinteger32;
-                Int16 highbyte;
-                Int16 lowbyte;
 
                 int bmWidth = Xaxis;
                 int bmHeight = Yaxis;
-                Array.Resize(ref fitsData, totaldata);
+                Array.Resize(ref FITS_Vector, totaldata);
 
                 int bmX = 0;
                 int bmY = 0;
                 UInt16 bmVal;
-                UInt16 bmMin = 255;
-                UInt16 bmMax = 0;
-                Double bmAvg = 0;
+
+                FITS_Hist_BucketWidth = ushort.MaxValue / HistBuckets;
 
                 do
                 {
@@ -134,12 +149,8 @@ namespace AstroImage
                         if (dataindex < totalpixels)
                         {
                             bmVal = TwosComplementBytesToInteger(dataUnit[k], dataUnit[k + 1]);
-                            if (bmVal > bmMax) bmMax = bmVal;
-                            if (bmVal < bmMin) bmMin = bmVal;
-                            bmAvg += bmVal;
-
-                            fitsData[dataindex] = bmVal;
-                            fitsHist[bmVal] += 1;
+                            FITS_Vector[dataindex] = bmVal;
+                            FITS_Hist[(int)(bmVal / FITS_Hist_BucketWidth)] += 1;
                         }
                         dataindex += 1;
                         bmX += 1;
@@ -150,18 +161,17 @@ namespace AstroImage
                         }
                     }
                 } while (bCount != 0);  //No more bytes read in = done
-
-                MaxValue = bmMax;
-                MinValue = bmMin;
-                AvgValue = (Int16)(bmAvg / totalpixels);
+                AvgValue = (int)FITS_Vector.Average();
+                MaxValue = (int)FITS_Vector.Max();
+                MinValue = (int)FITS_Vector.Min();
             }
             //Generate Fits image array
-            FITSArray = new UInt16[Xaxis, Yaxis];
-            for (int iy = 1; iy <= Yaxis; iy++)
+            FITS_Array = new UInt16[Xaxis, Yaxis];
+            for (int iy = 0; iy < Yaxis; iy++)
             {
-                for (int ix = 1; ix <= Xaxis; ix++)
+                for (int ix = 0; ix < Xaxis; ix++)
                 {
-                    FITSArray[ix-1, Yaxis-iy] = fitsData[(ix-1) + ((iy-1) * Xaxis)];
+                    FITS_Array[ix, iy] = (ushort)FITS_Vector[(ix) + (iy * Xaxis)];
                 }
             }
             //Close file
@@ -195,168 +205,7 @@ namespace AstroImage
             return (null);
         }
 
-        private (int, int) MedianHistogram(int buckets)
-        {
-            //Converts fitsArray to vector for histogram purposes
-            List<double> fsVector = new List<double>();
-            for (int i = 0; i < Xaxis; i++)
-                for (int j = 0; j < Yaxis; j++)
-                    fsVector.Add(FITSArray[i, j]);
-            MathNet.Numerics.Statistics.Histogram fsHistBuckets = new MathNet.Numerics.Statistics.Histogram(fsVector, buckets);
-            //Create an list that can be statistically analyzed
-            List<double> fsHistList = new List<double>();
-            for (int i = 0; i < fsHistBuckets.BucketCount; i++)
-                fsHistList.Add(fsHistBuckets[i].Count);
-            //Determine the gaussian distribution of the histogram
-            //double medianBucketValue = MathNet.Numerics.Statistics.Statistics.Mean(fsHistList);
-            double maxBucketValue = fsHistList.Max();
-            //int medianBucketIndex = FindNearestBucketSize(fsHistBuckets,medianBucketValue);
-            int maxBucketIndex = FindNearestBucketSize(fsHistBuckets, 0, fsHistBuckets.BucketCount, maxBucketValue);
-            //double stdDev = MathNet.Numerics.Statistics.Statistics.StandardDeviation(fsHistList);
-            int lowerBucketIndex = FindNearestBucketSize(fsHistBuckets, 0, maxBucketIndex, maxBucketValue / 4);
-            int upperBucketIndex = FindNearestBucketSize(fsHistBuckets, maxBucketIndex, fsHistBuckets.BucketCount, maxBucketValue / 4);
-
-            int upperBucketValue = (int)fsHistBuckets[upperBucketIndex].UpperBound;
-            int lowerBucketValue = (int)fsHistBuckets[lowerBucketIndex].LowerBound;
-            return (lowerBucketValue, upperBucketValue);
-        }
-
-        private int FindNearestBucketSize(MathNet.Numerics.Statistics.Histogram hg, int startLookingIndex, int stopLookingIndex, double level)
-        {
-            //find the bucket whose contents is closest to the value level
-            int min = int.MaxValue;
-            int thisone = 0;
-            for (int i = startLookingIndex; i < stopLookingIndex; i++)
-            {
-                if (Math.Abs(hg[i].Count - level) < min)
-                {
-                    min = (int)Math.Abs(hg[i].Count - level);
-                    thisone = i;
-                }
-            }
-            return thisone;
-        }
-
-        public Bitmap LinearStretch()
-        {
-            //Stretches image values based on Max, Min of byte image
-            //  This alogrithm subtracts the Min from each element, { multiplies by the
-            //     total range divided by the max-min range -- making sure there is not
-            //     a divide by zero situation by adding 1 to the average
-            Bitmap fitsBMP = new Bitmap(Xaxis, Yaxis);
-            int pixVal;
-            Color newColor;
-            (int lowerVal, int upperVal) = MedianHistogram(100);
-
-            int width = Xaxis;
-            int height = Yaxis;
-            int range = upperVal - lowerVal + 1;
-
-            int rangeStretch = 255 / range;
-            for (int iy = 0; iy < height; iy++)
-            {
-                for (int ix = 0; ix < width; ix++)
-                {
-                    pixVal = Math.Min((FITSArray[ix , iy] - lowerVal) * rangeStretch, 255);
-                    if (pixVal < 0) 
-                        pixVal = 0;
-                      newColor = Color.FromArgb(255, pixVal, pixVal, pixVal);
-                    fitsBMP.SetPixel(ix, iy, newColor);
-                }
-            }
-            return fitsBMP;
-        }
-
-        public Bitmap LogStretch()
-        {
-            //Stretches fits image values based on Max, Min of byte image using a Log stretch
-            //  This alogrithm subtracts the Min from each element, { multiplies by the
-            //     total range divided by the max-min range -- making sure there is not
-            //     a divide by zero situation by adding 1 to values
-            Bitmap fitsBMP = new Bitmap(Xaxis, Yaxis);
-            int pixVal;
-            Color newColor;
-            (double logMax, double logMin) = MedianHistogram(100);
-            //double logMax = Math.Log(Math.Max(MaxValue * .9, 1));
-            //double logMin = Math.Log(Math.Max(MinValue, 1));
-            double logAvg = Math.Log(Math.Max((AvgValue - 1), 1));
-
-            for (int iy = 0; iy < Yaxis; iy++)
-            {
-                for (int ix = 0; ix < Xaxis; ix++)
-                {
-                    double logX = Math.Log(Math.Max(FITSArray[ix, iy], (ushort)1));
-                    double clipLogX = Math.Max(logX - logAvg, 0);
-                    double stretchLogX = clipLogX / logMax;
-                    int stretchX = Convert.ToInt32(stretchLogX * 256.0);
-                    pixVal = Math.Min(stretchX, 255);
-                    newColor = Color.FromArgb(255, pixVal, pixVal, pixVal);
-                    fitsBMP.SetPixel(ix, iy, newColor);
-                }
-            }
-            return fitsBMP;
-        }
-
-        public void HistogramEqualization()
-        {
-            //Stretches image values based on Max, Min of byte image
-            //  This alogrithm subtracts the Min from each element, { multiplies by the
-            //     total range divided by the max-min range -- making sure there is not
-            //     a divide by zero situation by adding 1 to the average
-
-            int ddata;
-            double ndata;
-            //Compute the average of the "middle" 90% of pixels
-
-            int datasize = fitsData.Length - ImageHeaderLength;
-
-            //Make a probablity mass functiom (PMF) for the histogram, start with it zeroed out
-            //  and get the number of datapoints
-            //
-            int[] pmfdata = new int[256];
-            for (int i = 0; i < pmfdata.Length; i++)
-            {
-                pmfdata[i] = 0;
-                datasize += 1;
-            }
-            for (int j = ImageHeaderLength; j < fitsData.Length; j++)
-            {
-                ddata = Convert.ToInt16(fitsData[j]);
-                pmfdata[ddata] += 1;
-            }
-
-            //Make a cumulative distributive functiom (CDF) for the , start with it zeroed out
-            //  Normalize to the total number of points
-            double[] cdfdata = new double[256];
-            cdfdata[0] = pmfdata[0] / datasize;
-            for (int k = 1; k < pmfdata.Length; k++)
-            {
-                cdfdata[k] = cdfdata[k - 1] + (pmfdata[k] / datasize);
-            }
-            //Adjust each value of the image based on it//s
-
-            for (int i = ImageHeaderLength; i < fitsData.Length; i++)
-            {
-                ddata = Convert.ToInt16(fitsData[i]);
-                //stretch range from min to max value
-                // ndata = (255 / MaxValue) * (ddata - MinValue)
-                ndata = ddata * (cdfdata[ddata]);
-                //Clip top and bottom of range to 0 and 255 respectively
-                if (ndata > 255)
-                {
-                    ndata = 255;
-                }
-                if (ndata < 0)
-                {
-                    ndata = 0;
-                }
-                //Convert back into the image array
-                fitsData[i] = Convert.ToByte(ndata);
-            }
-            return;
-        }
-
-        public Point RADECtoImageXY(double hoursRA, double degreesDec)
+          public Point RADECtoImageXY(double hoursRA, double degreesDec)
         {
             //RA in hours, Dec in degrees
             //Return x,y point in image

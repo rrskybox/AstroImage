@@ -7,6 +7,8 @@ namespace AstroImage
         public static Image FitsToTargetImage(FitsFile af, double targetRA, double targetDec, int zoom)
         {
             AstroPic ap = new AstroPic(af);
+            ap.LinearStretch();
+
             if (ap.PixImage == null) return null;
             if ((targetRA == 0) && (targetDec == 0))
             {
@@ -39,6 +41,8 @@ namespace AstroImage
                     targetDecDeg = fitsList[i].Dec;
                 }
                 apList[i] = new AstroPic(fitsList[i]);
+                apList[i].LinearStretch();
+
                 Point center = fitsList[i].RADECtoImageXY(targetRAHrs, targetDecDeg);
                 center.X += -40;
                 center.Y += -2;
@@ -47,8 +51,8 @@ namespace AstroImage
                 Size framesize = new Size(apList[i].PixImage.Width / zoom, apList[i].PixImage.Height / zoom);
                 double rotation = -fitsList[i].PA;
                 blinkList[i] = apList[i].RotateTranslateCrop(center, rotation, framesize);
-                Size sizeUp = new Size(blinkList[i].Size.Width * zoom, blinkList[i].Size.Height *zoom );
-               blinkList[i] = AstroPic.Zoom(blinkList[i], sizeUp);
+                Size sizeUp = new Size(blinkList[i].Size.Width * zoom, blinkList[i].Size.Height * zoom);
+                blinkList[i] = AstroPic.Zoom(blinkList[i], sizeUp);
             }
 
             return blinkList;

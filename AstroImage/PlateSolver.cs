@@ -1,10 +1,10 @@
-﻿using System;
+﻿using AstroMath;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using AstroMath;
 
 // PlateSolve2.exe 
 //  (Right ascension in radians),

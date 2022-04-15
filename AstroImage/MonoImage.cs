@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Drawing;
-using System.Runtime.InteropServices;
-
 using System.Drawing.Imaging;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace AstroImage
 {
