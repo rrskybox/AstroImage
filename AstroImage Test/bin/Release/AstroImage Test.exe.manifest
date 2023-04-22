@@ -49,31 +49,31 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>sIA/hqsnteI0waF7J2ji4OEdcl1WZ5lR5hgtbu7ttno=</dsig:DigestValue>
+        <dsig:DigestValue>oHHiibqfkBG6AkCZQwfKbp22qv9DNlUGPw/C9/1T4bw=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="AstroImage.dll" size="22528">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="AstroImage.dll" size="25088">
       <assemblyIdentity name="AstroImage" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>VTW5wjD72Zf0SYj8lUM9Uns5sjp+W8E6EDc2/JZqRIY=</dsig:DigestValue>
+        <dsig:DigestValue>P2nf9T8CZDiuALm5gqgplpsp8Zxm9o0lGvpg9gyUeAw=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="AstroMath.dll" size="26624">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="AstroMath.dll" size="27136">
       <assemblyIdentity name="AstroMath" version="1.1.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>4wuKVN2FtylyrHIdVHdt86CSEdD2hagisCU697f/60Y=</dsig:DigestValue>
+        <dsig:DigestValue>gDKkjpW27IGmkrQtfgGXdwoXA9Xorao96OGyDWbsh4w=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

@@ -111,7 +111,8 @@ namespace AstroImage
                 } //================== end for (int x... ======================
             } //==================== end for (int y... ========================
             return 1;
-        } //********************** end SigmaFastFilter **********************************
+            //********************** end SigmaFastFilter **********************************
+        }
 
         //public int SigmaFastFilter(FitsFile Inp, int hWind, int Toleranz)
         //// Sigma filter with doubled calculation of the output values for gray value images.

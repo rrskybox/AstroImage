@@ -2,25 +2,36 @@
 
 namespace AstroImage
 {
-    public partial class AstroDisplay
+    public class AstroDisplay
     {
-        public static Image FitsToTargetImage(FitsFile af, double targetRA, double targetDec, int zoom)
-        {
-            AstroPic ap = new AstroPic(af);
-            ap.LinearStretch();
+        private AstroPic ap;
+        private FitsFile af;
 
-            if (ap.PixImage == null) return null;
-            if ((targetRA == 0) && (targetDec == 0))
-            {
-                targetRA = af.RA;
-                targetDec = af.Dec;
-            }
-            Point target = af.RADECtoImageXY(targetRA, targetDec);
-            target.X -= 40;
-            target.Y -= 2;
-            ap.PixImage = ap.AddCrossHair(target, 80, 2);
-            Size sizeUp = new Size(ap.PixImage.Size.Width / zoom, ap.PixImage.Size.Height / zoom);
-            return AstroPic.Zoom(ap.PixImage, sizeUp);
+        public Image PixImage => ap.PixImage;
+
+        public AstroDisplay(FitsFile adFitsFile)
+        {
+            af = adFitsFile;
+            ap = new AstroPic(adFitsFile);
+            FitsToTargetImage();
+        }
+
+        public Image FitsToTargetImage()
+        {
+            //ImageFilter.SigmaFastFilter(af, 5, 10);
+            ap.LinearStretch();
+            return ap.PixImage;
+       }
+
+        public void AddCrossHair(Point target, int crossWidth, int lineWidth) => ap.AddCrossHair(target, crossWidth, lineWidth);
+
+        public Image Zoom(int zoom) => ap.Zoom(zoom);
+      
+        public Image FitsToTargetImageXY(double targetX, double targetDecY, int zoom)
+        {
+            ap.LinearStretch();
+            ap.PixImage = ap.AddCrossHair(new Point((int)targetX, (int)targetDecY), 80, 8);
+            return Zoom(zoom);
         }
 
         public static Image[] FitsFilesToTargetImages(string[] fileList, double targetRAHrs, double targetDecDeg, int zoom)
@@ -37,25 +48,23 @@ namespace AstroImage
                 fitsList[i] = new FitsFile(fileList[i], true);
                 if ((targetRAHrs == 0) && (targetDecDeg == 0))
                 {
-                    targetRAHrs = fitsList[i].RA;
-                    targetDecDeg = fitsList[i].Dec;
+                    targetRAHrs = fitsList[i].ObjectRA;
+                    targetDecDeg = fitsList[i].ObjectDec;
                 }
                 apList[i] = new AstroPic(fitsList[i]);
                 apList[i].LinearStretch();
 
-                Point center = fitsList[i].RADECtoImageXY(targetRAHrs, targetDecDeg);
-                center.X += -40;
-                center.Y += -2;
-                apList[i].AddCrossHair(center, 80, 2);
-                //Point center = fitsList[i].RADECtoImageXY(fitsList[i].RA, fitsList[i].Dec);
+                Point targetXY = fitsList[i].RADECtoImageXY(targetRAHrs, targetDecDeg);
+                apList[i].AddCrossHair(targetXY, 80, 2);
                 Size framesize = new Size(apList[i].PixImage.Width / zoom, apList[i].PixImage.Height / zoom);
                 double rotation = -fitsList[i].PA;
-                blinkList[i] = apList[i].RotateTranslateCrop(center, rotation, framesize);
-                Size sizeUp = new Size(blinkList[i].Size.Width * zoom, blinkList[i].Size.Height * zoom);
-                blinkList[i] = AstroPic.Zoom(blinkList[i], sizeUp);
+                blinkList[i] = apList[i].RotateTranslateCrop(targetXY, rotation, framesize);
+                //Size sizeUp = new Size(blinkList[i].Size.Width * zoom, blinkList[i].Size.Height * zoom);
+                blinkList[i] = apList[i].Zoom(zoom);
             }
 
             return blinkList;
         }
+
     }
 }

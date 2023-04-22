@@ -26,15 +26,24 @@ namespace AstroImage
         const int ImageHeaderLength = 56 + (256 * 4);
 
         public string FilePath { get; set; }
+        public string ObjectName { get; set; }
         public int Xaxis { get; set; }  //Pixels
         public int Yaxis { get; set; }  //Pixels
-        public double RA { get; set; }  //OBJCTRA in Hours
-        public double Dec { get; set; }  //OBJCTDEC in Degrees
+        public double ObjectRA { get; set; }  //OBJCTRA in Hours
+        public double ObjectDec { get; set; }  //OBJCTDEC in Degrees
         public double PA { get; set; }  //ORIENTAT in Degrees
         public double XpixSz { get; set; } //XPIXSZ in microns
         public double YpixSz { get; set; }  //YPIXSZ in microns
         public double FocalLength { get; set; }  //FOCALLEN in mm
         public double PixelScale { get; set; }  //arcsec per pixel
+        public double CRVAL_RA { get; set; } //Image center RA in Degrees
+        public double CRVAL_Dec { get; set; }  //Image center Dec in Degrees
+        public double CRPIX_X { get; set; } //Image center X in pixels
+        public double CRPIX_Y { get; set; }  //Image center Y in pixels
+        public double CD1_1 { get; set; }
+        public double CD1_2 { get; set; }
+        public double CD2_1 { get; set; }
+        public double CD2_2 { get; set; }
         public int MaxValue { get; set; }  //ADU
         public int MinValue { get; set; }  //ADU
         public int AvgValue { get; set; }  //ADU
@@ -49,8 +58,8 @@ namespace AstroImage
             FITS_Vector = new int[fs.Xaxis * fs.Yaxis];
             Xaxis = fs.Xaxis;
             Yaxis = fs.Yaxis;
-            RA = fs.RA;
-            Dec = fs.Dec;
+            ObjectRA = fs.ObjectRA;
+            ObjectDec = fs.ObjectDec;
             PA = fs.PA;
             XpixSz = fs.XpixSz;
             YpixSz = fs.YpixSz;
@@ -58,6 +67,15 @@ namespace AstroImage
             PixelScale = fs.PixelScale;
             MaxValue = fs.MaxValue;
             AvgValue = fs.AvgValue;
+            CD1_1 = fs.CD1_1;
+            CD1_2 = fs.CD1_2;
+            CD2_1 = fs.CD2_1;
+            CD2_2 = fs.CD2_2;
+            CRVAL_RA = fs.CRVAL_RA;
+            CRVAL_Dec = fs.CRVAL_Dec;
+            CRPIX_X = fs.CRPIX_X;
+            CRPIX_Y = fs.CRPIX_Y;
+
             FITS_Hist_BucketWidth = fs.FITS_Hist_BucketWidth;
             for (int i = 0; i < FITS_Vector.Length; i++)
             {
@@ -71,7 +89,6 @@ namespace AstroImage
                     FITS_Array[ix, iy] = (ushort)FITS_Vector[(ix) + (iy * Xaxis)];
                 }
             }
-
         }
 
         public FitsFile(string filepath, bool dataswitch)
@@ -84,12 +101,12 @@ namespace AstroImage
             //
             FilePath = filepath;
 
-            int keyindex = -1;
+            int keyindex = 0;
             FileStream FitsHandle = File.OpenRead(filepath);
             do
             {
-                keyindex++;
                 bCount = FitsHandle.Read(headerRecord, 0, 80);
+                keyindex += 80;
                 //Check for empty file (file error on creation), just opt out if (so
                 if (bCount == 0)
                 {
@@ -98,19 +115,30 @@ namespace AstroImage
                 fitsHdr.Add(System.Text.Encoding.ASCII.GetString(headerRecord));
             } while (!fitsHdr.Last().StartsWith("END "));
             //Continue through any remaining header padding
-            do
+            while ((keyindex % 2880) != 0)
             {
-                keyindex++;
                 bCount = FitsHandle.Read(headerRecord, 0, 80);
-            } while (!(keyindex % 36 == 0));
+                keyindex += 80;
+            };
+            ObjectName = ReadKey("OBJECT");
 
             //Get the array dimensions
             int bitpix = Convert.ToInt32(ReadKey("BITPIX"));
             Xaxis = Convert.ToInt32(ReadKey("NAXIS1"));
             Yaxis = Convert.ToInt32(ReadKey("NAXIS2"));
-            RA = FitsKeytoHours(ReadKey("OBJCTRA"));
-            Dec = FitsDegtoDegrees(ReadKey("OBJCTDEC"));
-            PA = FitsDegtoDegrees(ReadKey("ORIENTAT"));
+            ObjectRA = FitsKeytoHours(ReadKey("OBJCTRA"));
+            ObjectDec = FitsDegtoDegrees(ReadKey("OBJCTDEC"));
+            CD1_1 = Convert.ToDouble(ReadKey("CD1_1"));
+            CD1_2 = Convert.ToDouble(ReadKey("CD1_2"));
+            CD2_1 = Convert.ToDouble(ReadKey("CD2_1"));
+            CD2_2 = Convert.ToDouble(ReadKey("CD2_2"));
+            CRVAL_RA = Convert.ToDouble(ReadKey("CRVAL1"));
+            CRVAL_Dec = Convert.ToDouble(ReadKey("CRVAL2"));
+            CRPIX_X = Convert.ToDouble(ReadKey("CRPIX1"));
+            CRPIX_Y = Convert.ToDouble(ReadKey("CRPIX2"));
+
+            PA = RotationToPA(CD1_1, CD1_2, CD2_1, CD2_2);
+
             //XpixSz = 0.72;
             // Ypixsz = 0.72;
             string sXpixsize = ReadKey("XPIXSZ");
@@ -133,18 +161,17 @@ namespace AstroImage
 
                 int bmWidth = Xaxis;
                 int bmHeight = Yaxis;
-                Array.Resize(ref FITS_Vector, totaldata);
+                Array.Resize(ref FITS_Vector, totalpixels);
 
                 int bmX = 0;
                 int bmY = 0;
                 UInt16 bmVal;
 
                 FITS_Hist_BucketWidth = ushort.MaxValue / HistBuckets;
-
                 do
                 {
                     bCount = FitsHandle.Read(dataUnit, 0, 2880);
-                    for (int k = 0; k <= (bCount - 1); k = k + 2)
+                    for (int k = 0; k <= (bCount - 1); k += 2)
                     {
                         if (dataindex < totalpixels)
                         {
@@ -205,45 +232,40 @@ namespace AstroImage
             return (null);
         }
 
-          public Point RADECtoImageXY(double hoursRA, double degreesDec)
+        public Point RADECtoImageXY(double hoursRA, double degreesDec)
         {
             //RA in hours, Dec in degrees
             //Return x,y point in image
-            //Get the image size and resolution and center of image in X/Y in radians
-            double radiansRA = Transform.HoursToRadians(Convert.ToDouble(hoursRA));
-            double radiansDec = Transform.DegreesToRadians(Convert.ToDouble(degreesDec));
-
-            double height = Yaxis;
-            double yCen = height / 2.0;
-            double width = Xaxis;
-            double xCen = width / 2.0;
-            //double hRes = AstroMath.Transform.DegreesToRadians(Ypixsz / 3600.0);  //Radians per pixel
-            double xResArcSec = ((206.265 / FocalLength) * XpixSz);
-            double hRes = AstroMath.Transform.DegreesToRadians(xResArcSec / 3600.0);  //Radians per pixel
-            //double wRes = AstroMath.Transform.DegreesToRadians(XpixSz / 3600.0);  //Readians per pixel
+            //Set resolution for x and y in arcsec per pixel
+            double xResArcSec = (206.265 / FocalLength) * XpixSz;
             double yResArcSec = (206.265 / FocalLength) * YpixSz;
-            double wRes = AstroMath.Transform.DegreesToRadians(yResArcSec / 3600.0);  //Readians per pixel
+            double xPixPerDegree = xResArcSec * 3600;
+            double yPixPerDegree = yResArcSec * 3600;
+            //Get the image size and resolution and center of image in X/Y in radians
+            double targetRADegrees = Transform.HoursToDegrees(Convert.ToDouble(hoursRA));
+            double targetDecDegrees = degreesDec;
 
             //Get RA/Dec for the center of the image 
-            double centerRA = Transform.HoursToRadians(RA);
-            double centerDec = Transform.DegreesToRadians(Dec);
-            double iPA = Transform.DegreesToRadians(PA);
-            //compute unrotated RA/Dec for +RA = -x; +Dec = y
-            //delta_ra = ra - ra0;          /* determine difference in RA */
-            double deltaRA = radiansRA - centerRA;
-            //x1 = cos(dec) * sin(delta_ra);
-            double urX = Math.Cos(radiansDec) * Math.Sin(deltaRA);
-            //y1 = sin(dec) * cos(dec0) - cos(dec) * cos(delta_ra) * sin(dec0);
-            double urY = (Math.Sin(radiansDec) * Math.Cos(centerDec)) - (Math.Cos(radiansDec) * Math.Cos(deltaRA) * Math.Sin(centerDec));
-            double urXas = (-1.0 * urX) / wRes;
-            double urYas = urY / hRes;
-            //rotate based on PA
-            Point newPt = new Point((int)urXas, (int)urYas);
-            Point rotPt = AstroMath.Polar2D.XYRotation(newPt, iPA);
-            //Point rotPt = new Point (0, 0);
-            //offset from upper left corner (0,0)
-            Point offPt = new Point((int)xCen + rotPt.X, (int)yCen - rotPt.Y);
-            return offPt;
+            double centerRADegrees = CRVAL_RA;
+            double centerDecDegrees = CRVAL_Dec;
+            //Compute unrotated xy from image center
+            //Create rotation matrix
+            AstroMath.Polar2D.RotationMatrix rotMat =
+                new Polar2D.RotationMatrix(CD1_1 * xPixPerDegree, CD1_2 * yPixPerDegree, CD2_1 * xPixPerDegree, CD2_2 * yPixPerDegree);
+            //Set relative position of target from center
+            double deltaRADegrees = targetRADegrees - centerRADegrees;
+            double deltaDecDegrees = targetDecDegrees - centerDecDegrees;
+            //Rotate delta
+            (double rotXDegrees, double rotYDegrees) = rotMat.Rotate(deltaRADegrees, deltaDecDegrees);
+            double rotXPixels = rotXDegrees * xPixPerDegree;
+            double rotYPixels = rotYDegrees * yPixPerDegree;
+            //Offset delta x,y from center
+            //Note that both X and Y are reversed
+            Point deltaTargetXY = new Point(-(int)rotXPixels, -(int)rotYPixels);
+            Point centerXY = new Point((int)CRPIX_X, (int)CRPIX_Y);
+            Point translatedXY = new Point(centerXY.X-deltaTargetXY.X, centerXY.Y-deltaTargetXY.Y);
+            //Point translatedXY = AstroMath.Polar2D.XYTranslation(centerXY, deltaTargetXY);
+            return translatedXY;
         }
 
         public bool RotateFit180(string filepathIn)
@@ -433,13 +455,28 @@ namespace AstroImage
             return subframe;
         }
 
-        public Boolean PlateSolve()
+        public double RotationToPA(double cd11, double cd12, double cd21, double cd22)
+        {
+            double pa1;
+            //double pa2;
+            //double at1 = (Math.Atan2(cd21,cd11));
+            //double at2 = (Math.Atan2(-cd12,cd22));
+            //double r1 = at1 * (180.0 / Math.PI);
+            //double r2 = at2 * (180.0 / Math.PI);
+            //double p1 = r1 + 180;
+            //double p2 = r2 + 180;
+            pa1 = AstroMath.Transform.NormalizeDegreeRange((Math.Atan2(cd21, cd11)) * (180.0 / Math.PI) + 180);
+            //pa2 = AstroMath.Transform.NormalizeDegreeRange((Math.Atan2(-cd12, cd22)) * (180.0 / Math.PI) + 180);
+            return pa1;
+        }
+
+        public Boolean PlateSolvePS2()
         {
             if (FilePath != null)
             {
-                Coordinate coords = PlateSolver.StartPlateSolve(FilePath,
-                                                                  RA,
-                                                                  Dec,
+                Coordinate coords = PlateSolverPS2.StartPlateSolve(FilePath,
+                                                                  ObjectRA,
+                                                                  ObjectDec,
                                                                   Xaxis * PixelScale,
                                                                   Yaxis * PixelScale,
                                                                   300,
@@ -448,15 +485,31 @@ namespace AstroImage
                     return false;
                 else
                 {
-                    RA = coords.Ra;
-                    Dec = coords.Dec;
+                    ObjectRA = coords.Ra;
+                    ObjectDec = coords.Dec;
                     PA = -coords.PA;
                     PixelScale = coords.PixelScale;
+                    CRVAL_RA = Transform.HoursToDegrees(ObjectRA);
+                    CRVAL_Dec = ObjectDec;
+                    CRPIX_X = Xaxis / 2;
+                    CRPIX_Y = Yaxis / 2;
+                    double cdelt1 = PixelScale / 3600;
+                        double cdelt2 = PixelScale / 3600;  //square pixels assumed
+                    //	CD1_1 = CDELT1 * cos(CROTA2)
+                    //	CD1_2 = -CDELT2 * sin(CROTA2)
+                    //	CD2_1 = CDELT1 * sin(CROTA2)
+                    //	CD2_2 = CDELT2 * cos(CROTA2)
+                    CD1_1 = -cdelt1 * Math.Cos(AstroMath.Transform.DegreesToRadians(PA));
+                    CD1_2 = -cdelt2 * Math.Sin(AstroMath.Transform.DegreesToRadians(PA));
+                    CD2_1 = cdelt1 * Math.Sin(AstroMath.Transform.DegreesToRadians(PA));
+                    CD2_2 = -cdelt2 * Math.Cos(AstroMath.Transform.DegreesToRadians(PA));
                     return true;
                 }
             }
             else return false;
         }
+
+
     }
 }
 

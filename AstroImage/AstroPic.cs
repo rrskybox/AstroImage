@@ -33,23 +33,36 @@ namespace AstroImage
             return;
         }
 
+        public static Image ResizeImage(Image imgToResize, Size size)
+        {
+            return (Image)(new Bitmap(imgToResize, size));
+        }
+
         public Bitmap AddCrossHair(Point position, int symSize, int lineWidth)
         {
             //Creates Yellow + with open center at location x,y in bitmap
             //  of size 1/10 of the height, with an internal opening of 
             //  1/10 the line length
+            Color clr = Color.HotPink;
             Bitmap bm = (Bitmap)PixImage;
             //If null image for some reason, then just return
-            if (bm == null) return null;
+            if (bm == null)
+                return null;
+
+            int maxPixX = bm.Width;
+            int maxPixY = bm.Height;
+            if (position.X > maxPixX)
+                position.X = maxPixX-1;
+            if (position.Y > maxPixY)
+                position.Y = maxPixY-1;
+
             int holeLen = (int)(symSize * .2);
-            int x = position.X;
-            int y = position.Y;
-            if (x < lineWidth) x = lineWidth;
-            if (y < lineWidth) y = lineWidth;
-            int xMin = x - symSize / 2;
-            int xMax = x + symSize / 2;
-            int yMin = y - symSize / 2;
-            int yMax = y + symSize / 2;
+            int xCen = position.X;
+            int yCen = position.Y;
+            int xMin = xCen - symSize / 2;
+            int xMax = xCen + symSize / 2;
+            int yMin = yCen - symSize / 2;
+            int yMax = yCen + symSize / 2;
             if (xMin < 0) xMin = 0;
             if (xMax < 0) xMax = 0;
             if (xMax > bm.Width) xMax = bm.Width;
@@ -60,22 +73,24 @@ namespace AstroImage
             //make left line, right line, top line, bottom line
             for (int s = -lineWidth / 2; s < +lineWidth / 2; s++)
             {
-                for (int i = xMin; i < (x - holeLen); i++)
-                { bm.SetPixel(i, y + s, Color.Yellow); }
-                for (int i = x + holeLen; i < xMax; i++)
-                { bm.SetPixel(i, y + s, Color.Yellow); }
-                for (int i = yMin; i < (y - holeLen); i++)
-                { bm.SetPixel(x + s, i, Color.Yellow); }
-                for (int i = y + holeLen; i < yMax; i++)
-                { bm.SetPixel(x + s, i, Color.Yellow); }
+                for (int i = xMin; i < (xCen - holeLen); i++)
+                { if (yCen + s >= 0 && yCen+s < maxPixY) bm.SetPixel(i, yCen + s, clr); }
+                for (int i = xCen + holeLen; i < xMax; i++)
+                { if (yCen + s >= 0 && yCen + s < maxPixY) bm.SetPixel(i, yCen + s, clr); }
+                for (int i = yMin; i < (yCen - holeLen); i++)
+                { if (xCen  +s >= 0 && xCen + s < maxPixX) bm.SetPixel(xCen + s, i, clr); }
+                for (int i = yCen + holeLen; i < yMax; i++)
+                { if (xCen + s >= 0 && xCen + s < maxPixX) bm.SetPixel(xCen + s, i, clr); }
             }
             return bm;
         }
 
-        public static Image Zoom(Image img, Size size)
+
+        public Image Zoom(int zoom)
         {
-            Bitmap bmp = new Bitmap(img, size);
+            Bitmap bmp = new Bitmap(PixImage, PixImage.Size);
             Graphics g = Graphics.FromImage(bmp);
+            Size sizeUp = new Size(bmp.Size.Width / zoom, bmp.Size.Height / zoom);
             g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
             return bmp;
         }

@@ -25,7 +25,7 @@ namespace AstroImage
         public double PixelScale { get; set; }
     }
 
-    public static class PlateSolver
+    public static class PlateSolverPS2
     {
         private static string fitsImageFilename;
         public static Coordinate StartPlateSolve(string fileName, double raHrs, double decDegrees, double fieldWidthArcSec, double fieldHeightArcSec, int maxTiles, string solverPath)
@@ -57,15 +57,10 @@ namespace AstroImage
             while (!proc.HasExited) { Thread.Sleep(1000); }
 
             string apmFileName = fileName.Replace(".fit", ".apm");
-
-            //string apmFileName = Path.Combine(Path.GetDirectoryName(fitsImageFilename),
-            //                                  Path.ChangeExtension(Path.GetFileNameWithoutExtension(fitsImageFilename), "apm"));
             coordinate = ReadApmFile(apmFileName);
 
             return coordinate;
         }
-
-
 
         private static Coordinate ReadApmFile(string fileName)
         {

@@ -42,19 +42,19 @@ namespace AstroImage_Test
 
             double pixSize = 1;
             if (af.FocalLength != 0) pixSize = (206.265 / af.FocalLength) * af.XpixSz;
-            if (af.RA == 0) af.RA = defaultRAHours;
-            if (af.Dec == 0) af.Dec = defaultDecDegrees;
+            if (af.ObjectRA == 0) af.ObjectRA = defaultRAHours;
+            if (af.ObjectDec == 0) af.ObjectDec = defaultDecDegrees;
             testBMP = new AstroPic(af);
-            if (af.PlateSolve())
+            if (af.PlateSolvePS2())
+            {
+                //ImageFilter.SigmaFastFilter(af, 5, 10);
                 testBMP.LinearStretch();
+            }
             else
                 testBMP.LogStretch();
 
             Point target;
-            target = af.RADECtoImageXY(af.RA, af.Dec);
-
-            target.X -= 40;
-            target.Y += 2;
+            target = af.RADECtoImageXY(af.ObjectRA, af.ObjectDec);
 
             testBMP.AddCrossHair(target, 80, 2);
 
@@ -95,19 +95,18 @@ namespace AstroImage_Test
             //Stack fsSet
             Stack afstk = new Stack(fsSet);
 
-            if (afstk.FitsStack.RA == 0) afstk.FitsStack.RA = defaultRAHours;
-            if (afstk.FitsStack.Dec == 0) afstk.FitsStack.Dec = defaultDecDegrees;
+            if (afstk.FitsStack.ObjectRA == 0) afstk.FitsStack.ObjectRA = defaultRAHours;
+            if (afstk.FitsStack.ObjectDec == 0) afstk.FitsStack.ObjectDec = defaultDecDegrees;
             ImageFilter.SigmaFastFilter(afstk.FitsStack, 5, 10);
 
             testBMP = new AstroPic(afstk.FitsStack);
             testBMP.LinearStretch();
 
             //target cross hairs
-            Point target;
             double pixSize = 1;
             if (afstk.FitsStack.FocalLength != 0)
                 pixSize = (206.265 / afstk.FitsStack.FocalLength) * afstk.FitsStack.XpixSz;
-            target = afstk.FitsStack.RADECtoImageXY(afstk.FitsStack.RA, afstk.FitsStack.Dec);
+            Point target = afstk.FitsStack.RADECtoImageXY(afstk.FitsStack.ObjectRA, afstk.FitsStack.ObjectDec);
             testBMP.AddCrossHair(target, 400, 5);
 
             Image baseImage = testBMP.ResizeImage(FitsPictureBox.Size, true);
@@ -158,8 +157,8 @@ namespace AstroImage_Test
             targetXY.X -= 40;
             targetXY.Y += 2;
             testBMP.AddCrossHair(targetXY, 80, 2);
-            Size sizeUp = new Size(testBMP.PixImage.Size.Width / 2, testBMP.PixImage.Size.Height / 2);
-            Image baseImage = AstroPic.Zoom(testBMP.PixImage, sizeUp);
+            //Size sizeUp = new Size(testBMP.PixImage.Size.Width / 2, testBMP.PixImage.Size.Height / 2);
+            Image baseImage = testBMP.Zoom(testBMP.PixImage.Size.Width / 2);
 
             FitsPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             FitsPictureBox.Image = baseImage;
@@ -206,8 +205,8 @@ namespace AstroImage_Test
             //Stack fsSet
             Stack afstk = new Stack(fsSet);
 
-            if (af.RA == 0) af.RA = defaultRAHours;
-            if (af.Dec == 0) af.Dec = defaultDecDegrees;
+            if (af.ObjectRA == 0) af.ObjectRA = defaultRAHours;
+            if (af.ObjectDec == 0) af.ObjectDec = defaultDecDegrees;
             AstroImage.ImageFilter.SigmaFastFilter(af, 5, 10);
 
             testBMP = new AstroPic(af);
@@ -218,7 +217,7 @@ namespace AstroImage_Test
             double pixSize = 1;
             if (af.FocalLength != 0)
                 pixSize = (206.265 / af.FocalLength) * af.XpixSz;
-            target = af.RADECtoImageXY(af.RA, af.Dec);
+            target = af.RADECtoImageXY(af.ObjectRA, af.ObjectDec);
             testBMP.AddCrossHair(target, 400, 5);
 
             Image baseImage = testBMP.ResizeImage(FitsPictureBox.Size, true);

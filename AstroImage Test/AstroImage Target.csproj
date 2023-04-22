@@ -42,7 +42,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <IntermediateOutputPath>C:\Users\rick-\AppData\Local\Temp\vsD26.tmp\Debug\</IntermediateOutputPath>
+    <IntermediateOutputPath>C:\Users\RICKMC~1\AppData\Local\Temp\vsDF15.tmp\Debug\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -52,7 +52,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <IntermediateOutputPath>C:\Users\rick-\AppData\Local\Temp\vsD26.tmp\Release\</IntermediateOutputPath>
+    <IntermediateOutputPath>C:\Users\RICKMC~1\AppData\Local\Temp\vsDF15.tmp\Release\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>AstroImage_Test.Program</StartupObject>
