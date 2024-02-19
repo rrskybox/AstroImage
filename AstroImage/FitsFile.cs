@@ -13,16 +13,10 @@ namespace AstroImage
         byte[] dataUnit = new byte[2880];
         int bCount;
 
-        const int HistBuckets = ushort.MaxValue;
-
-
         public int[] FITS_Vector = new int[1];
         public UInt16[,] FITS_Array;
 
         private List<string> fitsHdr = new List<string>();
-        public int[] FITS_Hist = new int[HistBuckets];
-        public double FITS_Hist_BucketWidth { get; set; }
-
         const int ImageHeaderLength = 56 + (256 * 4);
 
         public string FilePath { get; set; }
@@ -44,11 +38,9 @@ namespace AstroImage
         public double CD1_2 { get; set; }
         public double CD2_1 { get; set; }
         public double CD2_2 { get; set; }
-        public int MaxValue { get; set; }  //ADU
-        public int MinValue { get; set; }  //ADU
-        public int AvgValue { get; set; }  //ADU
-        public int HistUpperBound { get; set; }
-        public int HistLowerBound { get; set; }
+        public int MaxValue => FITS_Vector.Max();
+        public int MinValue => FITS_Vector.Min();
+        public int AvgValue => (int)FITS_Vector.Average();
 
         public FitsFile() { } //null instance
 
@@ -65,8 +57,6 @@ namespace AstroImage
             YpixSz = fs.YpixSz;
             FocalLength = fs.FocalLength;
             PixelScale = fs.PixelScale;
-            MaxValue = fs.MaxValue;
-            AvgValue = fs.AvgValue;
             CD1_1 = fs.CD1_1;
             CD1_2 = fs.CD1_2;
             CD2_1 = fs.CD2_1;
@@ -76,11 +66,10 @@ namespace AstroImage
             CRPIX_X = fs.CRPIX_X;
             CRPIX_Y = fs.CRPIX_Y;
 
-            FITS_Hist_BucketWidth = fs.FITS_Hist_BucketWidth;
             for (int i = 0; i < FITS_Vector.Length; i++)
             {
                 FITS_Vector[i] = fs.FITS_Vector[i];
-                FITS_Hist[(int)(FITS_Vector[i] / FITS_Hist_BucketWidth)] += 1;
+                //FITS_Hist[(int)(FITS_Vector[i] / FITS_Hist_BucketWidth)] += 1;
             }
             for (int iy = 0; iy < Yaxis; iy++)
             {
@@ -167,7 +156,6 @@ namespace AstroImage
                 int bmY = 0;
                 UInt16 bmVal;
 
-                FITS_Hist_BucketWidth = ushort.MaxValue / HistBuckets;
                 do
                 {
                     bCount = FitsHandle.Read(dataUnit, 0, 2880);
@@ -177,7 +165,7 @@ namespace AstroImage
                         {
                             bmVal = TwosComplementBytesToInteger(dataUnit[k], dataUnit[k + 1]);
                             FITS_Vector[dataindex] = bmVal;
-                            FITS_Hist[(int)(bmVal / FITS_Hist_BucketWidth)] += 1;
+                            //FITS_Hist[(int)(bmVal / FITS_Hist_BucketWidth)] += 1;
                         }
                         dataindex += 1;
                         bmX += 1;
@@ -188,9 +176,6 @@ namespace AstroImage
                         }
                     }
                 } while (bCount != 0);  //No more bytes read in = done
-                AvgValue = (int)FITS_Vector.Average();
-                MaxValue = (int)FITS_Vector.Max();
-                MinValue = (int)FITS_Vector.Min();
             }
             //Generate Fits image array
             FITS_Array = new UInt16[Xaxis, Yaxis];
@@ -263,7 +248,7 @@ namespace AstroImage
             //Note that both X and Y are reversed
             Point deltaTargetXY = new Point(-(int)rotXPixels, -(int)rotYPixels);
             Point centerXY = new Point((int)CRPIX_X, (int)CRPIX_Y);
-            Point translatedXY = new Point(centerXY.X-deltaTargetXY.X, centerXY.Y-deltaTargetXY.Y);
+            Point translatedXY = new Point(centerXY.X - deltaTargetXY.X, centerXY.Y - deltaTargetXY.Y);
             //Point translatedXY = AstroMath.Polar2D.XYTranslation(centerXY, deltaTargetXY);
             return translatedXY;
         }
@@ -494,7 +479,7 @@ namespace AstroImage
                     CRPIX_X = Xaxis / 2;
                     CRPIX_Y = Yaxis / 2;
                     double cdelt1 = PixelScale / 3600;
-                        double cdelt2 = PixelScale / 3600;  //square pixels assumed
+                    double cdelt2 = PixelScale / 3600;  //square pixels assumed
                     //	CD1_1 = CDELT1 * cos(CROTA2)
                     //	CD1_2 = -CDELT2 * sin(CROTA2)
                     //	CD2_1 = CDELT1 * sin(CROTA2)

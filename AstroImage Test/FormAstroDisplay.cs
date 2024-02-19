@@ -10,10 +10,10 @@ namespace AstroImage
     public partial class FormAstroDisplay : Form
     {
 
-        public FormAstroDisplay(FitsFile af, double targetRA, double targetDec, double imagePA, int zoom, string targetName)
+        public FormAstroDisplay(ref FitsFile af, double targetRA, double targetDec, double imagePA, int zoom, string targetName)
         {
             InitializeComponent();
-            AstroDisplay ad = new AstroDisplay(af);
+            AstroDisplay ad = new AstroDisplay(ref af);
             Image fit = ad.FitsToTargetImage();
             fitsPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.Text = targetName;

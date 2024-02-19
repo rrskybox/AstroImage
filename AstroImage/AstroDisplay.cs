@@ -9,16 +9,16 @@ namespace AstroImage
 
         public Image PixImage => ap.PixImage;
 
-        public AstroDisplay(FitsFile adFitsFile)
+        public AstroDisplay(ref FitsFile adFitsFile)
         {
-            af = adFitsFile;
-            ap = new AstroPic(adFitsFile);
+            ap = new AstroPic(ref adFitsFile);
             FitsToTargetImage();
         }
 
         public Image FitsToTargetImage()
         {
             //ImageFilter.SigmaFastFilter(af, 5, 10);
+            //ap.ArcSinhStretch();
             ap.LinearStretch();
             return ap.PixImage;
        }
@@ -29,7 +29,7 @@ namespace AstroImage
       
         public Image FitsToTargetImageXY(double targetX, double targetDecY, int zoom)
         {
-            ap.LinearStretch();
+            ap.ArcSinhStretch();
             ap.PixImage = ap.AddCrossHair(new Point((int)targetX, (int)targetDecY), 80, 8);
             return Zoom(zoom);
         }
@@ -51,8 +51,8 @@ namespace AstroImage
                     targetRAHrs = fitsList[i].ObjectRA;
                     targetDecDeg = fitsList[i].ObjectDec;
                 }
-                apList[i] = new AstroPic(fitsList[i]);
-                apList[i].LinearStretch();
+                apList[i] = new AstroPic(ref fitsList[i]);
+                apList[i].ArcSinhStretch();
 
                 Point targetXY = fitsList[i].RADECtoImageXY(targetRAHrs, targetDecDeg);
                 apList[i].AddCrossHair(targetXY, 80, 2);

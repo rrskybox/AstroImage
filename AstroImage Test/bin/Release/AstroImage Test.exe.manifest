@@ -42,38 +42,38 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="AstroImage Test.exe" size="15360">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="AstroImage Test.exe" size="14336">
       <assemblyIdentity name="AstroImage Test" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>oHHiibqfkBG6AkCZQwfKbp22qv9DNlUGPw/C9/1T4bw=</dsig:DigestValue>
+        <dsig:DigestValue>7Au85+25nAk7ZXbNBF62is6MurZ8ubEvdCO7C9JbPy8=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="AstroImage.dll" size="25088">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="AstroImage.dll" size="26112">
       <assemblyIdentity name="AstroImage" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>P2nf9T8CZDiuALm5gqgplpsp8Zxm9o0lGvpg9gyUeAw=</dsig:DigestValue>
+        <dsig:DigestValue>a8orD3A8AHwWj7nUsd9UKMq/o0a+nFaEjlgVSUdJ3B4=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="AstroMath.dll" size="27136">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="AstroMath.dll" size="27648">
       <assemblyIdentity name="AstroMath" version="1.1.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>gDKkjpW27IGmkrQtfgGXdwoXA9Xorao96OGyDWbsh4w=</dsig:DigestValue>
+        <dsig:DigestValue>ffAgyoq9YA9VEWH90i4ruldkwSVLigLiu6xgwIEuMJE=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

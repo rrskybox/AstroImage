@@ -44,14 +44,14 @@ namespace AstroImage_Test
             if (af.FocalLength != 0) pixSize = (206.265 / af.FocalLength) * af.XpixSz;
             if (af.ObjectRA == 0) af.ObjectRA = defaultRAHours;
             if (af.ObjectDec == 0) af.ObjectDec = defaultDecDegrees;
-            testBMP = new AstroPic(af);
+            testBMP = new AstroPic(ref af);
             if (af.PlateSolvePS2())
             {
                 //ImageFilter.SigmaFastFilter(af, 5, 10);
                 testBMP.LinearStretch();
             }
             else
-                testBMP.LogStretch();
+                testBMP.LogStretch(ref af);
 
             Point target;
             target = af.RADECtoImageXY(af.ObjectRA, af.ObjectDec);
@@ -74,65 +74,65 @@ namespace AstroImage_Test
 
         private void StackButton_Click(object sender, EventArgs e)
         {
-            const double defaultRAHours = 0;
-            const double defaultDecDegrees = 0;
-            zoomDistance = 0;
-            StackButton.BackColor = Color.Salmon;
-            openFileDialog1.Filter = "FITS files (*.fit)|*.fit";
-            openFileDialog1.ShowDialog();
-            string[] fileNames = openFileDialog1.FileNames;
-            if (fileNames.Length < 1) return;
+            //const double defaultRAHours = 0;
+            //const double defaultDecDegrees = 0;
+            //zoomDistance = 0;
+            //StackButton.BackColor = Color.Salmon;
+            //openFileDialog1.Filter = "FITS files (*.fit)|*.fit";
+            //openFileDialog1.ShowDialog();
+            //string[] fileNames = openFileDialog1.FileNames;
+            //if (fileNames.Length < 1) return;
 
-            FitsFile[] fsSet = new FitsFile[fileNames.Length];
-            for (int fs = 0; fs < fileNames.Length; fs++)
-            {
-                fitsFileTextBox.Text = Path.GetFileName(fileNames[fs]);
-                Show();
-                Application.DoEvents();
-                fsSet[fs] = new AstroImage.FitsFile(fileNames[fs], true);
-            }
-            //
-            //Stack fsSet
-            Stack afstk = new Stack(fsSet);
+            //FitsFile[] fsSet = new FitsFile[fileNames.Length];
+            //for (int fs = 0; fs < fileNames.Length; fs++)
+            //{
+            //    fitsFileTextBox.Text = Path.GetFileName(fileNames[fs]);
+            //    Show();
+            //    Application.DoEvents();
+            //    fsSet[fs] = new AstroImage.FitsFile(fileNames[fs], true);
+            //}
+            ////
+            ////Stack fsSet
+            //Stack afstk = new Stack(fsSet);
 
-            if (afstk.FitsStack.ObjectRA == 0) afstk.FitsStack.ObjectRA = defaultRAHours;
-            if (afstk.FitsStack.ObjectDec == 0) afstk.FitsStack.ObjectDec = defaultDecDegrees;
-            ImageFilter.SigmaFastFilter(afstk.FitsStack, 5, 10);
+            //if (afstk.FitsStack.ObjectRA == 0) afstk.FitsStack.ObjectRA = defaultRAHours;
+            //if (afstk.FitsStack.ObjectDec == 0) afstk.FitsStack.ObjectDec = defaultDecDegrees;
+            //ImageFilter.SigmaFastFilter(afstk.FitsStack, 5, 10);
 
-            testBMP = new AstroPic(afstk.FitsStack);
-            testBMP.LinearStretch();
+            //testBMP = new AstroPic(afstk.FitsStack);
+            //testBMP.LinearStretch();
 
-            //target cross hairs
-            double pixSize = 1;
-            if (afstk.FitsStack.FocalLength != 0)
-                pixSize = (206.265 / afstk.FitsStack.FocalLength) * afstk.FitsStack.XpixSz;
-            Point target = afstk.FitsStack.RADECtoImageXY(afstk.FitsStack.ObjectRA, afstk.FitsStack.ObjectDec);
-            testBMP.AddCrossHair(target, 400, 5);
+            ////target cross hairs
+            //double pixSize = 1;
+            //if (afstk.FitsStack.FocalLength != 0)
+            //    pixSize = (206.265 / afstk.FitsStack.FocalLength) * afstk.FitsStack.XpixSz;
+            //Point target = afstk.FitsStack.RADECtoImageXY(afstk.FitsStack.ObjectRA, afstk.FitsStack.ObjectDec);
+            //testBMP.AddCrossHair(target, 400, 5);
 
-            Image baseImage = testBMP.ResizeImage(FitsPictureBox.Size, true);
-            FitsPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-            FitsPictureBox.Image = baseImage;
+            //Image baseImage = testBMP.ResizeImage(FitsPictureBox.Size, true);
+            //FitsPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            //FitsPictureBox.Image = baseImage;
 
-            Show();
-            Application.DoEvents();
+            //Show();
+            //Application.DoEvents();
 
-            HistoChart.Series.Clear();
-            Series hisPnts = new Series();
-            
-            for (int i = 0; i < afstk.FitsStack.FITS_Hist.Length; i++)
-                hisPnts.Points.AddXY(Math.Log10(i+1), Math.Log10(afstk.FitsStack.FITS_Hist[i]+1));
-            HistoChart.Series.Add(hisPnts);
+            //HistoChart.Series.Clear();
+            //Series hisPnts = new Series();
 
-            Series hisBounds = new Series();
-            hisBounds.Color = Color.Red;
-            hisBounds.Points.AddXY(Math.Log10(afstk.FitsStack.HistUpperBound), Math.Log10(UInt16.MaxValue));
-            hisBounds.Points.AddXY(Math.Log10(afstk.FitsStack.HistLowerBound), Math.Log10(UInt16.MaxValue));
-            HistoChart.Series.Add(hisBounds);
+            //for (int i = 0; i < afstk.FitsStack.FITS_Hist.Length; i++)
+            //    hisPnts.Points.AddXY(Math.Log10(i + 1), Math.Log10(afstk.FitsStack.FITS_Hist[i] + 1));
+            //HistoChart.Series.Add(hisPnts);
 
-            Show();
-            Application.DoEvents();
+            //Series hisBounds = new Series();
+            //hisBounds.Color = Color.Red;
+            //hisBounds.Points.AddXY(Math.Log10(afstk.FitsStack.HistUpperBound), Math.Log10(UInt16.MaxValue));
+            //hisBounds.Points.AddXY(Math.Log10(afstk.FitsStack.HistLowerBound), Math.Log10(UInt16.MaxValue));
+            //HistoChart.Series.Add(hisBounds);
 
-            StackButton.BackColor = Color.Green;
+            //Show();
+            //Application.DoEvents();
+
+            //StackButton.BackColor = Color.Green;
             return;
         }
 
@@ -209,8 +209,8 @@ namespace AstroImage_Test
             if (af.ObjectDec == 0) af.ObjectDec = defaultDecDegrees;
             AstroImage.ImageFilter.SigmaFastFilter(af, 5, 10);
 
-            testBMP = new AstroPic(af);
-            testBMP.LogStretch();
+            testBMP = new AstroPic(ref af);
+            testBMP.LogStretch(ref af);
 
             //target cross hairs
             Point target;

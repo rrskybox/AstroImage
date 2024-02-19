@@ -4,13 +4,13 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 
 namespace AstroImage
-{
+{ 
     public partial class AstroPic
     {
         public Bitmap PixImage { get; set; }
         private FitsFile fitsIn;
 
-        public AstroPic(FitsFile af)
+        public AstroPic(ref FitsFile af)
         {
             //Plate solve image and update centerRA, centerDec, centerPA
             fitsIn = af;
@@ -21,15 +21,22 @@ namespace AstroImage
 
         public void LinearStretch()
         {
-            Histogram hi = new Histogram(fitsIn);
-            PixImage = hi.LinearStretch();
+            Histogram hi = new Histogram(ref fitsIn, Histogram.StretchType.Linear);
+            PixImage = hi.NormalStretch(ref fitsIn);
             return;
         }
 
-        public void LogStretch()
+        public void LogStretch(ref FitsFile fitsIn)
         {
-            Histogram hi = new Histogram(fitsIn);
-            PixImage = hi.LogStretch();
+            Histogram hi = new Histogram(ref fitsIn, Histogram.StretchType.Log);
+            PixImage = hi.NormalStretch(ref fitsIn);
+            return;
+        }
+
+        public void ArcSinhStretch()
+        {
+            Histogram hi = new Histogram(ref fitsIn, Histogram.StretchType.Asinh);
+            PixImage = hi.NormalStretch(ref fitsIn);
             return;
         }
 
@@ -52,9 +59,9 @@ namespace AstroImage
             int maxPixX = bm.Width;
             int maxPixY = bm.Height;
             if (position.X > maxPixX)
-                position.X = maxPixX-1;
+                position.X = maxPixX - 1;
             if (position.Y > maxPixY)
-                position.Y = maxPixY-1;
+                position.Y = maxPixY - 1;
 
             int holeLen = (int)(symSize * .2);
             int xCen = position.X;
@@ -74,11 +81,11 @@ namespace AstroImage
             for (int s = -lineWidth / 2; s < +lineWidth / 2; s++)
             {
                 for (int i = xMin; i < (xCen - holeLen); i++)
-                { if (yCen + s >= 0 && yCen+s < maxPixY) bm.SetPixel(i, yCen + s, clr); }
+                { if (yCen + s >= 0 && yCen + s < maxPixY) bm.SetPixel(i, yCen + s, clr); }
                 for (int i = xCen + holeLen; i < xMax; i++)
                 { if (yCen + s >= 0 && yCen + s < maxPixY) bm.SetPixel(i, yCen + s, clr); }
                 for (int i = yMin; i < (yCen - holeLen); i++)
-                { if (xCen  +s >= 0 && xCen + s < maxPixX) bm.SetPixel(xCen + s, i, clr); }
+                { if (xCen + s >= 0 && xCen + s < maxPixX) bm.SetPixel(xCen + s, i, clr); }
                 for (int i = yCen + holeLen; i < yMax; i++)
                 { if (xCen + s >= 0 && xCen + s < maxPixX) bm.SetPixel(xCen + s, i, clr); }
             }
